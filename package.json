@@ -1,0 +1,25 @@
+{
+  "name": "hubot-groupme-webhook",
+  "version": "1.0.0",
+  "description": "GroupMe adapter for Hubot using the bot API webhook",
+  "main": "./src/groupme.coffee",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mattvperry/hubot-groupme-webhook.git"
+  },
+  "keywords": [
+    "hubot",
+    "groupme",
+    "adapter",
+    "webhook"
+  ],
+  "author": "Matt Perry",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mattvperry/hubot-groupme-webhook/issues"
+  },
+  "homepage": "https://github.com/mattvperry/hubot-groupme-webhook#readme"
+}
