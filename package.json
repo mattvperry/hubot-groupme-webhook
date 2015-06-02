@@ -21,5 +21,14 @@
   "bugs": {
     "url": "https://github.com/mattvperry/hubot-groupme-webhook/issues"
   },
-  "homepage": "https://github.com/mattvperry/hubot-groupme-webhook#readme"
+  "homepage": "https://github.com/mattvperry/hubot-groupme-webhook#readme",
+  "dependencies": {
+    "groupme": ">=0.5.7"
+  },
+  "peerDependencies": {
+    "hubot": ">=2.0"
+  },
+  "devDependencies": {
+    "coffee-script": "1.6.3"
+  }
 }
