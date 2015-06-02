@@ -40,7 +40,7 @@ class GroupMeAdapter extends Adapter
   send: (envelope, strings...) ->
     Api.Bots.post.Q(@token, @bot_id, strings.join('\n'), {})
     .then null, (err) =>
-      @robot.logger.error err
+      @robot.logger.error err.body
 
   reply: (envelope, strings...) ->
     @send envelope, "@#{envelope.user.name}: #{strings[0]}", strings[1..]...
