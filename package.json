@@ -23,7 +23,8 @@
   },
   "homepage": "https://github.com/mattvperry/hubot-groupme-webhook#readme",
   "dependencies": {
-    "groupme": ">=0.5.7"
+    "groupme": ">=0.5.7",
+    "q": "0.9.x"
   },
   "peerDependencies": {
     "hubot": ">=2.0"
