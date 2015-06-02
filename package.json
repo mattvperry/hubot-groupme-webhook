@@ -1,6 +1,6 @@
 {
   "name": "hubot-groupme-webhook",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "GroupMe adapter for Hubot using the bot API webhook",
   "main": "./src/groupme.coffee",
   "scripts": {
