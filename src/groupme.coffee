@@ -77,7 +77,7 @@ class GroupMeAdapter extends Adapter
         if line.length > @max_len
           wrap_with(word, ' ') for word in line.split(' ')
         else
-          wrap_with(line, '\n\n')
+          wrap_with(line, '\n')
     str.trim() for str in result
 
 exports.use = (robot) ->
