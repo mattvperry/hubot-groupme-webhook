@@ -2,7 +2,7 @@ Adapter         = require('hubot').Adapter
 TextMessage     = require('hubot').TextMessage
 User            = require('hubot').User
 Api             = require('groupme').Stateless
-Q               = require('q')
+Promise         = require('bluebird')
 
 class GroupMeAdapter extends Adapter
   constructor: (robot) ->
@@ -16,10 +16,10 @@ class GroupMeAdapter extends Adapter
   run: ->
     @robot.logger.info 'Run GroupMe Adapter'
 
-    Api.Bots.index.Q(@token)
+    Promise.promisify(Api.Bots.index)(@token)
     .then (bots) =>
       bot = (bot for bot in bots when bot.bot_id == @bot_id)[0]
-      Api.Groups.show.Q @token, bot.group_id
+      Promise.promisify(Api.Groups.show)(@token, bot.group_id)
     .then (group) =>
       for user in group.members
         user.room = group.id
@@ -44,10 +44,10 @@ class GroupMeAdapter extends Adapter
     @chunkStrings(strings...).reduce((acc, item) =>
       acc
       .then =>
-        Api.Bots.post.Q(@token, @bot_id, item, {})
+        Promise.promisify(Api.Bots.post)(@token, @bot_id, item, {})
       .then ->
-        Q.delay(1000)
-    , Q.delay(2000))
+        Promise.delay(1000)
+    , Promise.delay(2000))
     .then null, (err) =>
       @robot.logger.error err
     .done()
