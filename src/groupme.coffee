@@ -59,26 +59,22 @@ class GroupMeAdapter extends Adapter
     @send envelope, "/topic #{strings[0]}"
 
   chunkStrings: (strings...) ->
-    line_num = 0
-    space_left = @max_len
-    result = [""]
+    wrap_with = (text, seed, delimiter) ->
+      if text.length > @max_len
+        edge = text.slice(0, @max_len).lastIndexOf(delimiter)
+        if edge > 0
+          line = text.slice(0, edge)
+          remainder = text.slice(edge + 1)
+          seed = wrap_with remainder, seed, delimiter
+          return [line].concat seed
+      return [text].concat seed
 
-    wrap_with = (token, delimiter) ->
-      string = token + delimiter
-      if string.length > space_left
-        result[++line_num] = ""
-        space_left = @max_len - string.length
-      else
-        space_left -= string.length
-      result[line_num] += string
-
-    for string in strings
-      for line in string.split('\n')
-        if line.length > @max_len
-          wrap_with(word, ' ') for word in line.split(' ')
-        else
-          wrap_with(line, '\n')
-    str.trim() for str in result
+    # First pass break on new lines
+    result = [].concat (wrap_with(s, [], '\n') for s in strings)...
+    # Second pass break on words
+    result = [].concat (wrap_with(s, [], ' ') for s in result)...
+    # Third pass break on chars
+    return [].concat (wrap_with(s, [], '') for s in result)...
 
 exports.use = (robot) ->
   new GroupMeAdapter robot
