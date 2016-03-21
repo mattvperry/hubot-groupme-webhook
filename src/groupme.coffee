@@ -49,7 +49,7 @@ class GroupMeAdapter extends Adapter
         Promise.delay(1000)
     , Promise.delay(2000))
     .then null, (err) =>
-      @robot.logger.error err
+      @robot.logger.error err.body
     .done()
 
   reply: (envelope, strings...) ->
@@ -59,7 +59,7 @@ class GroupMeAdapter extends Adapter
     @send envelope, "/topic #{strings[0]}"
 
   chunkStrings: (strings...) ->
-    wrap_with = (text, seed, delimiter) ->
+    wrap_with = (text, seed, delimiter) =>
       if text.length > @max_len
         edge = text.slice(0, @max_len).lastIndexOf(delimiter)
         if edge > 0
