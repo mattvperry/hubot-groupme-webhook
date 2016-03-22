@@ -2,7 +2,7 @@
   "name": "hubot-groupme-webhook",
   "version": "1.0.3",
   "description": "GroupMe adapter for Hubot using the bot API webhook",
-  "main": "./src/groupme.coffee",
+  "main": "./src/adapter/groupme.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -23,13 +23,16 @@
   },
   "homepage": "https://github.com/mattvperry/hubot-groupme-webhook#readme",
   "dependencies": {
-    "groupme": ">=0.5.7",
-    "bluebird": ">=3.3.4"
+    "groupme": ">=0.5.7"
   },
   "peerDependencies": {
     "hubot": ">=2.0"
   },
   "devDependencies": {
-    "coffee-script": "1.6.3"
+    "gulp": "^3.9.1",
+    "gulp-clean": "^0.3.2",
+    "gulp-typescript": "^2.12.1",
+    "gulp-typings": "^1.3.0",
+    "typescript": "^1.8.9"
   }
 }
