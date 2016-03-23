@@ -40,6 +40,9 @@ class GroupMeAdapter extends Adapter {
                 res.writeHead(200, { "Content-Type": "text/plain "});
                 res.end();
             });
+
+            this.robot.logger.info("Connected to GroupMe");
+            this.emit("connected");
         } catch (e) {
             this._logError(e);
         }
