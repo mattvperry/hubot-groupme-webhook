@@ -1,7 +1,6 @@
 /// <reference path="..\..\typings\main.d.ts" />
 
 import { Robot, Adapter, TextMessage, User, Envelope } from "hubot";
-import { IncomingMessage } from "http";
 import { Stateless as groupme } from "groupme";
 import * as promisify from "es6-promisify";
 import { Request, Response } from "express-serve-static-core";
@@ -70,7 +69,7 @@ class GroupMeAdapter extends Adapter {
     }
 
     private _logError(e: any): void {
-        if (e instanceof IncomingMessage) {
+        if (e.body) {
             this.robot.logger.error(e.body);
         } else {
             this.robot.logger.error(e);
