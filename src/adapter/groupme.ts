@@ -1,6 +1,7 @@
 /// <reference path="..\..\typings\main.d.ts" />
 
 import { Robot, Adapter, TextMessage, User, Envelope } from "hubot";
+import { IncomingMessage } from "http";
 import { Stateless as groupme } from "groupme";
 import * as promisify from "es6-promisify";
 import { Request, Response } from "express-serve-static-core";
@@ -9,16 +10,16 @@ class GroupMeAdapter extends Adapter {
     private _maxLen: number;
     private _token: string;
     private _botId: string;
-    
+
     constructor(robot: Robot) {
         super(robot);
         this.robot.logger.info("Initialize GroupMe Adapter");
-        
+
         this._maxLen = 1000;
         this._token = process.env.HUBOT_GROUPME_TOKEN;
         this._botId = process.env.HUBOT_GROUPME_BOT_ID;
     }
-    
+
     public async run(): Promise<void> {
         this.robot.logger.info("Run GroupMe Adapter");
         try {
@@ -31,7 +32,7 @@ class GroupMeAdapter extends Adapter {
                     name: member.nickname
                 });
             }
-            
+
             this.robot.router.post("/hubot/incoming", (req: Request, res: Response) => {
                 if (req.body.sender_type !== "bot") {
                     let user = this.robot.brain.userForId(req.body.user_id);
@@ -41,8 +42,8 @@ class GroupMeAdapter extends Adapter {
                 res.end();
             });
         } catch (e) {
-            this.robot.logger.error(e);
-        } 
+            this._logError(e);
+        }
     }
 
     public async send(envelope: Envelope, ...strings: string[]): Promise<void> {
@@ -56,24 +57,32 @@ class GroupMeAdapter extends Adapter {
                 await this._delay(1000);
             }
         } catch (e) {
-            this.robot.logger.error(e.body);
+            this._logError(e);
         }
     }
-    
+
     public async reply(envelope: Envelope, ...strings: string[]): Promise<void> {
         return this.send(envelope, `@${envelope.user.name} ${strings[0]}`, ...(strings.slice(1)));
     }
-    
+
     public async topic(envelope: Envelope, ...strings: string[]): Promise<void> {
         return this.send(envelope, `/topic ${strings[0]}`);
     }
-    
+
+    private _logError(e: any): void {
+        if (e instanceof IncomingMessage) {
+            this.robot.logger.error(e.body);
+        } else {
+            this.robot.logger.error(e);
+        }
+    }
+
     private async _delay(ms: number): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             setTimeout(resolve, ms);
         });
     }
-    
+
     private _chunkStrings(strings: string[]): string[] {
         // First pass break on new lines
         let result = [].concat(strings.map((s) => this._wrapWith(s, [], "\n")));
@@ -82,7 +91,7 @@ class GroupMeAdapter extends Adapter {
         // Third pass break on chars
         return [].concat(strings.map((s) => this._wrapWith(s, [], "")));
     }
-    
+
     private _wrapWith(text: string, seed: string[], delimiter: string): string[] {
         if (text.length > this._maxLen) {
             let edge = text.slice(0, this._maxLen).lastIndexOf(delimiter);
