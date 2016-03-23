@@ -63,11 +63,11 @@ class GroupMeAdapter extends Adapter {
         }
     }
 
-    public async reply(envelope: Envelope, ...strings: string[]): Promise<void> {
+    public reply(envelope: Envelope, ...strings: string[]): Promise<void> {
         return this.send(envelope, `@${envelope.user.name} ${strings[0]}`, ...(strings.slice(1)));
     }
 
-    public async topic(envelope: Envelope, ...strings: string[]): Promise<void> {
+    public topic(envelope: Envelope, ...strings: string[]): Promise<void> {
         return this.send(envelope, `/topic ${strings[0]}`);
     }
 
@@ -79,7 +79,7 @@ class GroupMeAdapter extends Adapter {
         }
     }
 
-    private async _delay(ms: number): Promise<void> {
+    private _delay(ms: number): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             setTimeout(resolve, ms);
         });
