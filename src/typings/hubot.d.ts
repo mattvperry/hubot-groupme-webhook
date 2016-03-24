@@ -73,7 +73,7 @@ declare module "hubot" {
         run(): void;
         shutdown(): void;
         http(url: string, options: scoped.Options): scoped.ScopedClient;
-        
+
         on(event: string, listener: Function): this;
         on(event: "error", listener: (err: any) => void): this;
         on(event: "running", listener: () => void);
@@ -81,7 +81,7 @@ declare module "hubot" {
 
     export class Adapter extends events.EventEmitter {
         robot: Robot;
-        
+
         constructor(robot: Robot);
         send(envelope: Envelope, ...strings: string[]): void;
         emote(envelope: Envelope, ...strings: string[]): void;

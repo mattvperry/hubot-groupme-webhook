@@ -15,8 +15,8 @@ declare module "scoped" {
         hash: string;
     }
 
-    interface ScopedClient {
-        new(url: string, options: Options): ScopedClient;
+    class ScopedClient {
+        constructor(url: string, options: Options);
         fullPath(p: string): string;
         scope(callback: Function): ScopedClient;
         scope(url: string, callback: Function): ScopedClient;
