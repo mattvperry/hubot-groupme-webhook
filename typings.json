@@ -1,11 +1,8 @@
 {
   "ambientDependencies": {
-    "es6-promisify": "file:src\\typings\\es6-promisify.d.ts",
-    "express-serve-static-core": "registry:dt/express-serve-static-core#0.0.0+20160317120654",
-    "groupme": "file:src\\typings\\groupme.d.ts",
-    "hubot": "file:src\\typings\\hubot.d.ts",
-    "node": "registry:dt/node#4.0.0+20160319033040",
-    "node-scoped-http-client": "file:src\\typings\\node-scoped-http-client.d.ts"
+    "groupme": "github:mattvperry/typed-groupme#cde11a9"
   },
-  "dependencies": {}
+  "dependencies": {
+    "thenify": "registry:npm/thenify#3.1.0+20160211003958"
+  }
 }

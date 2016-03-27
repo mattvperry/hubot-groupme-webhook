@@ -1,8 +1,8 @@
-/// <reference path="..\..\typings\main.d.ts" />
+/// <reference path="..\typings\main.d.ts" />
 
-import { Robot, Adapter, TextMessage, User, Envelope } from "hubot";
+import * as thenify from "thenify";
+import { Robot, Adapter, TextMessage, User, Envelope } from "tsbot";
 import { Stateless as groupme } from "groupme";
-import * as promisify from "es6-promisify";
 import { Request, Response } from "express-serve-static-core";
 
 class GroupMeAdapter extends Adapter {
@@ -22,9 +22,9 @@ class GroupMeAdapter extends Adapter {
     public async run(): Promise<void> {
         this.robot.logger.info("Run GroupMe Adapter");
         try {
-            let bots = await promisify(groupme.Bots.index)(this._token);
+            let bots = await thenify(groupme.Bots.index)(this._token);
             let bot = bots.filter((bot) => bot.bot_id === this._botId)[0];
-            let group = await promisify(groupme.Groups.show)(this._token, bot.group_id);
+            let group = await thenify(groupme.Groups.show)(this._token, bot.group_id);
             for (let member of group.members) {
                 this.robot.brain.userForId(member.user_id, {
                     room: group.id,
@@ -51,7 +51,7 @@ class GroupMeAdapter extends Adapter {
     public async send(envelope: Envelope, ...strings: string[]): Promise<void> {
         let delay = this._delay(2000);
         let messages = this._chunkStrings(strings);
-        let botPost = promisify(groupme.Bots.post);
+        let botPost = thenify(groupme.Bots.post);
         try {
             await delay;
             for (let message of messages) {
@@ -69,6 +69,9 @@ class GroupMeAdapter extends Adapter {
 
     public topic(envelope: Envelope, ...strings: string[]): Promise<void> {
         return this.send(envelope, `/topic ${strings[0]}`);
+    }
+
+    public close(): void {
     }
 
     private _logError(e: any): void {
