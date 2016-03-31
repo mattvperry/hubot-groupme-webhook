@@ -90,11 +90,11 @@ class GroupMeAdapter extends Adapter {
 
     private _chunkStrings(strings: string[]): string[] {
         // First pass break on new lines
-        let result = [].concat(strings.map((s) => this._wrapWith(s, [], "\n")));
+        let result = [].concat(...strings.map((s) => this._wrapWith(s, [], "\n")));
         // Second pass break on words
-        result = [].concat(strings.map((s) => this._wrapWith(s, [], " ")));
+        result = [].concat(...result.map((s) => this._wrapWith(s, [], " ")));
         // Third pass break on chars
-        return [].concat(strings.map((s) => this._wrapWith(s, [], "")));
+        return [].concat(...result.map((s) => this._wrapWith(s, [], "")));
     }
 
     private _wrapWith(text: string, seed: string[], delimiter: string): string[] {
