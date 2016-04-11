@@ -2,7 +2,7 @@
 
 import * as thenify from "thenify";
 import { Robot, Adapter, TextMessage, User, Envelope } from "tsbot";
-import { Stateless as groupme } from "groupme";
+import { Stateless as groupme, ImageService } from "groupme";
 import { Request, Response } from "express-serve-static-core";
 
 class GroupMeAdapter extends Adapter {
@@ -69,6 +69,12 @@ class GroupMeAdapter extends Adapter {
 
     public topic(envelope: Envelope, ...strings: string[]): Promise<void> {
         return this.send(envelope, `/topic ${strings[0]}`);
+    }
+    
+    public async emote(envelope: Envelope, ...strings: string[]): Promise<void> {
+        let getImageAsync = thenify(ImageService.post);
+        let images = await Promise.all<{ url: string }>(strings.map(s => getImageAsync(s)));
+        return this.send(envelope, ...images.map(i => i.url));
     }
 
     public close(): void {
