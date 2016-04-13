@@ -1,6 +1,7 @@
 /// <reference path="..\typings\main.d.ts" />
 
 import * as thenify from "thenify";
+import { ClientRequest, IncomingMessage } from "http";
 import { Robot, Adapter, TextMessage, User, Envelope } from "tsbot";
 import { Stateless as groupme, ImageService } from "groupme";
 import { Request, Response } from "express-serve-static-core";
@@ -70,10 +71,9 @@ class GroupMeAdapter extends Adapter {
     public topic(envelope: Envelope, ...strings: string[]): Promise<void> {
         return this.send(envelope, `/topic ${strings[0]}`);
     }
-    
+
     public async emote(envelope: Envelope, ...strings: string[]): Promise<void> {
-        let getImageAsync = thenify(ImageService.post);
-        let images = await Promise.all<{ url: string }>(strings.map(s => getImageAsync(s)));
+        let images = await Promise.all<{ url: string }>(strings.map(s => this._reuploadImage(s)));
         return this.send(envelope, ...images.map(i => i.url));
     }
 
@@ -91,6 +91,24 @@ class GroupMeAdapter extends Adapter {
     private _delay(ms: number): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             setTimeout(resolve, ms);
+        });
+    }
+
+    private _reuploadImage(url: string): Promise<{ url: string }> {
+        return new Promise<{ url: string }>((resolve, reject) => {
+            this.robot.http(`https://image.groupme.com/pictures?access_token=${this._token}`).post((err, postReq) => {
+                this.robot.http(url).get((err, getReq) => {
+                    getReq.on("response", (resp: IncomingMessage) => {
+                        resp.pipe(postReq);
+                    });
+                })();
+            })((err, response, body) => {
+                if (err != null) {
+                    reject(err);
+                } else {
+                    resolve(JSON.parse(body));
+                }
+            });
         });
     }
 
