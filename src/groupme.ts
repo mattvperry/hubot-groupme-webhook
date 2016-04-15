@@ -3,13 +3,14 @@
 import * as thenify from "thenify";
 import { ClientRequest, IncomingMessage } from "http";
 import { Robot, Adapter, TextMessage, User, Envelope } from "tsbot";
-import { Stateless as groupme, ImageService } from "groupme";
+import { Stateless as groupme, ImageService, ImageServicePayload } from "groupme";
 import { Request, Response } from "express-serve-static-core";
 
 class GroupMeAdapter extends Adapter {
     private _maxLen: number;
     private _token: string;
     private _botId: string;
+    private _imageSvc: string;
 
     constructor(robot: Robot) {
         super(robot);
@@ -18,6 +19,7 @@ class GroupMeAdapter extends Adapter {
         this._maxLen = 1000;
         this._token = process.env.HUBOT_GROUPME_TOKEN;
         this._botId = process.env.HUBOT_GROUPME_BOT_ID;
+        this._imageSvc = `https://image.groupme.com/pictures?access_token=${this._token}`;
     }
 
     public async run(): Promise<void> {
@@ -49,19 +51,10 @@ class GroupMeAdapter extends Adapter {
         }
     }
 
-    public async send(envelope: Envelope, ...strings: string[]): Promise<void> {
-        let delay = this._delay(2000);
-        let messages = this._chunkStrings(strings);
-        let botPost = thenify(groupme.Bots.post);
-        try {
-            await delay;
-            for (let message of messages) {
-                await botPost(this._token, this._botId, message, {});
-                await this._delay(1000);
-            }
-        } catch (e) {
-            this._logError(e);
-        }
+    public send(envelope: Envelope, ...strings: string[]): Promise<void> {
+        return this._delaySequence(...strings.map(s => {
+            return () => this._botPost(s);
+        }));
     }
 
     public reply(envelope: Envelope, ...strings: string[]): Promise<void> {
@@ -73,8 +66,10 @@ class GroupMeAdapter extends Adapter {
     }
 
     public async emote(envelope: Envelope, ...strings: string[]): Promise<void> {
-        let images = await Promise.all<{ url: string }>(strings.map(s => this._reuploadImage(s)));
-        return this.send(envelope, ...images.map(i => i.url));
+        let images = await Promise.all<ImageServicePayload>(strings.map(s => this._reuploadImage(s)));
+        return this._delaySequence(...images.map(i => {
+            return () => this._botPost("", i.picture_url);
+        }));
     }
 
     public close(): void {
@@ -93,20 +88,56 @@ class GroupMeAdapter extends Adapter {
             setTimeout(resolve, ms);
         });
     }
+    
+    private async _botPost(message: string, picture_url?: string): Promise<{}> {
+        let post = thenify(groupme.Bots.post);
+        return await post(this._token, this._botId, message, { picture_url: picture_url });
+    }
+    
+    private async _delaySequence(...generators: (() => Promise<any>)[]): Promise<void> {
+        try {
+            await this._delay(1000);
+            for (const generator of generators) {
+                await generator();
+                await this._delay(1000);
+            }
+        } catch (e) {
+            this._logError(e);
+        }
+    }
 
-    private _reuploadImage(url: string): Promise<{ url: string }> {
-        return new Promise<{ url: string }>((resolve, reject) => {
-            this.robot.http(`https://image.groupme.com/pictures?access_token=${this._token}`).post((err, postReq) => {
-                this.robot.http(url).get((err, getReq) => {
-                    getReq.on("response", (resp: IncomingMessage) => {
-                        resp.pipe(postReq);
-                    });
-                })();
-            })((err, response, body) => {
+    private _reuploadImage(url: string): Promise<ImageServicePayload> {
+        return new Promise<ImageServicePayload>(async (resolve, reject) => {
+            try {
+                let dlReq = await this._createRequest("GET", url);
+                let ulReq = await this._createRequest("POST", this._imageSvc);
+
+                dlReq.on("error", reject);
+                dlReq.on("response", (res: IncomingMessage) => {
+                    res.pipe(ulReq);
+                    res.on("end", () => ulReq.end());
+                });
+                dlReq.end();
+
+                let body = "";
+                ulReq.on("error", reject);
+                ulReq.on("response", (res: IncomingMessage) => {
+                    res.on("data", (chunk) => body += chunk);
+                    res.on("end", () => resolve(JSON.parse(body).payload));
+                });
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+    
+    private _createRequest(method: string, url: string): Promise<ClientRequest> {
+        return new Promise<ClientRequest>((resolve, reject) => {
+            this.robot.http(url).request(method, (err, req) => {
                 if (err != null) {
                     reject(err);
                 } else {
-                    resolve(JSON.parse(body));
+                    resolve(req);
                 }
             });
         });

@@ -1,6 +1,6 @@
 {
   "ambientDependencies": {
-    "groupme": "github:mattvperry/typed-groupme#cde11a9"
+    "groupme": "github:mattvperry/typed-groupme#4cfef61"
   },
   "dependencies": {
     "thenify": "registry:npm/thenify#3.1.0+20160211003958"
