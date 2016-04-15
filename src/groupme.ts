@@ -11,6 +11,7 @@ class GroupMeAdapter extends Adapter {
     private _token: string;
     private _botId: string;
     private _imageSvc: string;
+    private _emoteCache: { [url: string]: string };
 
     constructor(robot: Robot) {
         super(robot);
@@ -20,6 +21,12 @@ class GroupMeAdapter extends Adapter {
         this._token = process.env.HUBOT_GROUPME_TOKEN;
         this._botId = process.env.HUBOT_GROUPME_BOT_ID;
         this._imageSvc = `https://image.groupme.com/pictures?access_token=${this._token}`;
+        
+        if (!this.robot.brain.get("emoteCache")) {
+            this.robot.brain.set("emoteCache", {});
+        }
+        
+        this._emoteCache = this.robot.brain.get("emoteCache");
     }
 
     public async run(): Promise<void> {
@@ -107,6 +114,11 @@ class GroupMeAdapter extends Adapter {
     }
 
     private _reuploadImage(url: string): Promise<ImageServicePayload> {
+        const cached = this._emoteCache[url];
+        if (cached != null) {
+            return Promise.resolve({ url: cached, picture_url: cached });
+        }
+
         return new Promise<ImageServicePayload>(async (resolve, reject) => {
             try {
                 let dlReq = await this._createRequest("GET", url);
