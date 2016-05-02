@@ -59,7 +59,8 @@ class GroupMeAdapter extends Adapter {
     }
 
     public send(envelope: Envelope, ...strings: string[]): Promise<void> {
-        return this._delaySequence(...strings.map(s => {
+        let chunkedStrings = this._chunkStrings(strings);
+        return this._delaySequence(...chunkedStrings.map(s => {
             return () => this._botPost(s);
         }));
     }
